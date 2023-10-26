@@ -1,7 +1,4 @@
-// @ts-ignore
-import { Alg } from "cubing/alg";
-// @ts-ignore
-import { randomScrambleForEvent } from "cubing/scramble";
+import { generateScramble, processSequence } from "./util";
 import ora from "ora";
 import prompts from "prompts";
 import { SerialPort } from "serialport";
@@ -11,18 +8,21 @@ const port = new SerialPort({
   baudRate: 115200
 });
 
-let currentProcess: Promise<void> | null;
-let resolveCurrent: () => void;
-
 port.on("open", () => {
   awaitInput();
 });
 
-port.on("data", () => {
-  if (currentProcess) {
+port.on("data", (data) => {
+  const message = data.toString("utf-8").trim();
+
+  if (currentProcess && message === "Ready!") {
     resolveCurrent();
+    currentProcess = null;
   }
 });
+
+let currentProcess: Promise<void> | null;
+let resolveCurrent: () => void;
 
 async function awaitInput() {
   const { action } = await prompts({
@@ -36,56 +36,40 @@ async function awaitInput() {
   });
 
   switch (action) {
-    // Run scramble on cube
     case "scramble": {
-      // Generate scramble
       const spinner = ora("Generating scramble").start();
-      const scramble = randomScrambleForEvent("333");
+      const scramble = await generateScramble();
 
-      // Execute scramble on cube
-      spinner.text = "Executing scramble - ";
-      const currentProcess = new Promise<void>((resolve) => {
+      spinner.text = "Executing scramble";
+
+      currentProcess = new Promise<void>((resolve) => {
         resolveCurrent = resolve;
-        port.write(scramble + "\n");
+        port.write(scramble + "\n", "utf-8");
       });
 
-      // Wait for cube to finish
       await currentProcess;
-      spinner.stop();
 
-      // Wait for further input
+      spinner.stop();
       awaitInput();
       break;
     }
-    // Run user submitted algorithm
     case "algorithm": {
-      // Get alg
-      const { rawAlg } = (await prompts({
+      const { notation } = await prompts({
         type: "text",
-        name: "rawAlg",
+        name: "notation",
         message: "Enter algorithm to run"
-      })) as { rawAlg: string };
-
-      // Modify alg to be compatible with 5 sides
-      const alg = new Alg(
-        rawAlg
-          .replace(/u[^'2]/i, "")
-          .replace(/u'/i, "")
-          .replace(/u2/i, "")
-      );
-
-      // Execute algorithm on cube
+      });
+      const sequence = processSequence(notation);
       const spinner = ora("Executing algorithm").start();
-      const currentProcess = new Promise<void>((resolve) => {
+
+      currentProcess = new Promise<void>((resolve) => {
         resolveCurrent = resolve;
-        port.write(alg.experimentalSimplify().toString() + "\n");
+        port.write(sequence + "\n", "utf-8");
       });
 
-      // Wait for cube to finish
       await currentProcess;
-      spinner.stop();
 
-      // Wait for further input
+      spinner.stop();
       awaitInput();
       break;
     }
