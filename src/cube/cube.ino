@@ -1,5 +1,4 @@
 #include <Arduino.h>;
-#include <stdio.h>;z
 
 // Motor output pins
 int directionPin = 2;
