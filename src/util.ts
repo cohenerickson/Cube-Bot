@@ -4,9 +4,14 @@ import { Alg } from "cubing/alg";
 import { randomScrambleForEvent } from "cubing/scramble";
 
 export function processSequence(sequence: string): string {
-  const alg = new Alg(sequence);
+  const alg = new Alg(
+    sequence
+      .replaceAll("U2", "R L F2 B2 R' L' D2 R L F2 B2 R' L'")
+      .replaceAll("U'", "R L F2 B2 R' L' D' R L F2 B2 R' L'")
+      .replaceAll("U", "R L F2 B2 R' L' D R L F2 B2 R' L'")
+  );
 
-  return alg.experimentalSimplify().toString();
+  return alg.toString();
 }
 
 export async function generateScramble(): Promise<string> {
