@@ -12,7 +12,7 @@ int backPin = 7;
 int steps = 200;
 
 // Microseconds between ossilations
-int stepDelay = 1000;
+int stepDelay = 500;
 
 void setup() {
   // open serial port
