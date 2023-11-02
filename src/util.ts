@@ -38,14 +38,7 @@ export function transform(alg: string[], transformation?: string[]) {
 
     if (!move) continue;
 
-    if (move === "u") {
-      transformedMoves.push(
-        ...`R L F2 B2 R' L' D${
-          double ? "2" : prime ? "'" : ""
-        } R L F2 B2 R' L'`.split(/\s/g)
-      );
-      continue;
-    } else if (move === "x") {
+    if (move === "x") {
       transformation = ["u", "f", "d", "b"];
       if (prime) transformation = transformation.reverse();
     } else if (move === "y") {
@@ -54,6 +47,49 @@ export function transform(alg: string[], transformation?: string[]) {
     } else if (move === "z") {
       transformation = ["u", "r", "d", "l"];
       if (prime) transformation = transformation.reverse();
+    } else if (move === "m") {
+      transformedMoves.push(
+        ...transform(
+          [
+            `x${double ? "2" : prime ? "" : "'"}`,
+            `r${double ? "2" : prime ? "'" : ""}`,
+            `l${double ? "2" : prime ? "" : "'"}`,
+            ...alg.slice(i + 1)
+          ]
+        )
+      );
+      break;
+    } else if (move === "e") {
+      transformedMoves.push(
+        ...transform(
+          [
+            `y${double ? "2" : prime ? "" : "'"}`,
+            `u${double ? "2" : prime ? "'" : ""}`,
+            `d${double ? "2" : prime ? "" : "'"}`,
+            ...alg.slice(i + 1)
+          ]
+        )
+      );
+      break;
+    } else if (move === "s") {
+      transformedMoves.push(
+        ...transform(
+          [
+            `z${double ? "2" : prime ? "'" : ""}`,
+            `f${double ? "2" : prime ? "" : "'"}`,
+            `b${double ? "2" : prime ? "'" : ""}`,
+            ...alg.slice(i + 1)
+          ]
+        )
+      );
+      break;
+    } else if (move === "u") {
+      transformedMoves.push(
+        ...`R L F2 B2 R' L' D${
+          double ? "2" : prime ? "'" : ""
+        } R L F2 B2 R' L'`.split(/\s/g)
+      );
+      continue;
     } else {
       transformedMoves.push(move + (double ? "2" : prime ? "'" : ""));
       continue;
