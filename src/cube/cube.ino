@@ -42,6 +42,8 @@ void loop() {
       Serial.println(result[i]);
 
       processMove(result[i]);
+
+      delayMicroseconds(stepDelay);
     }
 
     delete[] result;
@@ -78,13 +80,6 @@ void processMove(String move) {
   } else {
     motor = directionPin;
   }
-
-  Serial.print("Motor: ");
-  Serial.println(motor);
-  Serial.print("Rots: ");
-  Serial.println(rots);
-  Serial.print("CCW: ");
-  Serial.println(ccw);
 
   turnMotor(motor, rots, ccw);
 }
